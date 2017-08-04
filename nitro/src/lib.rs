@@ -1,4 +1,2 @@
-#[macro_use]
-extern crate nom;
-
+mod lambda;
 pub mod parser;
