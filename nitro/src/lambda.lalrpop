@@ -1,0 +1,28 @@
+use parser::Lambda;
+use std::str::FromStr;
+
+grammar;
+
+Var: String =
+    <var: r"[a-z]+"> => String::from_str(var).unwrap();
+
+Variable: Lambda =
+    <var: Var> => Lambda::Variable { var: var };
+
+Function: Lambda =
+    "(λ" <var: Var> "." <expr: Term> ")" => Lambda::Function {
+        var: var,
+        expr: Box::new(expr)
+    };
+
+Application: Lambda =
+    "(" <func: Term> <arg: Term> ")" => Lambda::Application {
+        func: Box::new(func),
+        arg: Box::new(arg)
+    };
+
+pub Term: Lambda = {
+    <term: Variable> => term,
+    <term: Function> => term,
+    <term: Application> => term
+};
