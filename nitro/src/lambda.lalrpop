@@ -21,8 +21,8 @@ Application: Lambda =
         arg: Box::new(arg)
     };
 
-pub Term: Lambda = {
-    <term: Variable> => term,
-    <term: Function> => term,
-    <term: Application> => term
+pub Term = {
+    Variable,
+    Function,
+    Application
 };
