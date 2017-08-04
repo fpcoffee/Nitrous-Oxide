@@ -28,12 +28,12 @@ pub fn read_lambda(input: &str) -> Option<Lambda> {
     }
 }
 
-fn lambda_term(input: &[u8]) -> IResult<&[u8], Lambda> {
-    alt!(input, variable | function | application)
-}
-
 fn decode(input: &[u8]) -> String {
     str::from_utf8(input).unwrap().to_string()
+}
+
+fn lambda_term(input: &[u8]) -> IResult<&[u8], Lambda> {
+    alt!(input, variable | function | application)
 }
 
 fn variable(input: &[u8]) -> IResult<&[u8], Lambda> {
