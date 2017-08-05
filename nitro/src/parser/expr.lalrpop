@@ -1,0 +1,52 @@
+use std::str::FromStr;
+use parser::util;
+use parser::types::ConstExpr;
+
+grammar;
+
+pub Bool: ConstExpr =
+    r"(true|false)" => {
+        let b = bool::from_str(<>).unwrap();
+        ConstExpr::Bool(b)
+    };
+
+pub Int: ConstExpr =
+    r"[+\-]?(0|[1-9][0-9]*)" => {
+        let i = i64::from_str(<>).unwrap();
+        ConstExpr::Int(i)
+    };
+
+pub Real: ConstExpr =
+    r"[+\-]?(inf|NaN|((0|[1-9][0-9]*)\.[0-9]*|\.[0-9]+)([eE][+\-]?[0-9]+)?)" => {
+        let r = f64::from_str(<>).unwrap();
+        ConstExpr::Real(r)
+    };
+
+pub Char: ConstExpr =
+    r"'([^\\'[[:cntrl:]]]|\\([\\'0abtnvfr]|u[0-9a-f]{4}|x[0-9a-f]{2}))'" => {
+        let chr = <>;
+        let mut chars = chr[1..chr.len() - 1].chars();
+
+        ConstExpr::Char(util::unescape(&mut chars).unwrap())
+    };
+
+pub String: ConstExpr =
+    r#""([^\\"[[:cntrl:]]]|\\([\\"0abtnvfr]|u[0-9a-f]{4}|x[0-9a-f]{2}))*""# => {
+        let s = <>;
+        let mut chars = s[1..s.len() - 1].chars();
+        let mut string = String::with_capacity(s.len());
+
+        while let Some(c) = util::unescape(&mut chars) {
+            string.push(c);
+        }
+
+        ConstExpr::String(string)
+    };
+
+pub ConstExpr: ConstExpr = {
+    String,
+    Char,
+    Int,
+    Real,
+    Bool
+};
