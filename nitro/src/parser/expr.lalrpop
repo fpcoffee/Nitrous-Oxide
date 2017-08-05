@@ -44,9 +44,9 @@ pub String: ConstExpr =
     };
 
 pub ConstExpr: ConstExpr = {
-    String,
-    Char,
+    Bool,
     Int,
     Real,
-    Bool
+    Char,
+    String
 };
