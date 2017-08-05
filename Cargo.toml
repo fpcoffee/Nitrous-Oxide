@@ -1,0 +1,10 @@
+[package]
+name = "nitrous-oxide"
+version = "0.1.0"
+authors = [
+    "Jesse Maes <kebertyx@gmail.com>",
+    "Aaron Hudson <aahud@cs.nmt.edu>"
+]
+
+[dependencies.nitro]
+path = "./nitro"
