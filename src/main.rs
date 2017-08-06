@@ -25,9 +25,9 @@ fn main() {
 
     let strs = vec![
         "\"\"", "\"hello\"",  "\"Good\\x42ye!\"", "\"\\\"Nevermore\\\"\"",
-        "\"\\u03bb\\u03c7\\u2192\\u03c7\\u00b2\"",
+        "\"\\u03bb\\u03c7 \\u2192 \\u03c7\\u00b2\"",
         "\"Can a string be really long\\n\\tAnd have a new line and shit?\"",
-        "\"This should fail\nyo\"", "Escaping something I shouldn\'t"
+        "\"This should fail\nyo\"", "\"Escaping something I shouldn\\'t\""
     ];
 
     for s in strs.iter() {
