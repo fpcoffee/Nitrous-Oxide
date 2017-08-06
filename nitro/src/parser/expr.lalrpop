@@ -1,52 +1,78 @@
 use std::str::FromStr;
+
 use parser::util;
 use parser::types::ConstExpr;
 
 grammar;
 
-pub Bool: ConstExpr =
-    r"(true|false)" => {
-        let b = bool::from_str(<>).unwrap();
-        ConstExpr::Bool(b)
+
+// Defines the precedence for non-terminal symbols
+match {
+    r"(true|false)" => BOOL,
+    r"[+\-]?(0|[1-9][0-9]*)" => INT,
+    r"[+\-]?(inf|NaN|((0|[1-9][0-9]*)\.[0-9]*|\.[0-9]+)([eE][+\-]?[0-9]+)?)"
+        => REAL,
+    r"'([^\\'[[:cntrl:]]]|\\([\\'0abtnvfr]|u[0-9a-f]{4}|x[0-9a-f]{2}))'"
+        => CHAR,
+    r#""([^\\"[[:cntrl:]]]|\\([\\"0abtnvfr]|u[0-9a-f]{4}|x[0-9a-f]{2}))*""#
+        => STRING
+} else {
+    r"[a-z_][a-zA-Z0-9_]*" => ID,
+    _
+}
+
+
+/// ========================
+/// # Constant Expressions
+/// ========================
+
+
+pub Bool: bool =
+    BOOL => {
+        bool::from_str(<>).unwrap()
     };
 
-pub Int: ConstExpr =
-    r"[+\-]?(0|[1-9][0-9]*)" => {
-        let i = i64::from_str(<>).unwrap();
-        ConstExpr::Int(i)
+
+pub Int: i64 =
+    INT => {
+        i64::from_str(<>).unwrap()
     };
 
-pub Real: ConstExpr =
-    r"[+\-]?(inf|NaN|((0|[1-9][0-9]*)\.[0-9]*|\.[0-9]+)([eE][+\-]?[0-9]+)?)" => {
-        let r = f64::from_str(<>).unwrap();
-        ConstExpr::Real(r)
+
+pub Real: f64 =
+    REAL => {
+        f64::from_str(<>).unwrap()
     };
 
-pub Char: ConstExpr =
-    r"'([^\\'[[:cntrl:]]]|\\([\\'0abtnvfr]|u[0-9a-f]{4}|x[0-9a-f]{2}))'" => {
+
+pub Char: char =
+    CHAR => {
         let chr = <>;
         let mut chars = chr[1..chr.len() - 1].chars();
 
-        ConstExpr::Char(util::unescape(&mut chars).unwrap())
+        util::unescape(&mut chars).unwrap()
     };
 
-pub String: ConstExpr =
-    r#""([^\\"[[:cntrl:]]]|\\([\\"0abtnvfr]|u[0-9a-f]{4}|x[0-9a-f]{2}))*""# => {
+
+pub String: String =
+    STRING => {
         let s = <>;
-        let mut chars = s[1..s.len() - 1].chars();
-        let mut string = String::with_capacity(s.len());
+        let len = s.len();
+        let mut chars = s[1..len - 1].chars();
+        let mut string = String::with_capacity(len);
 
         while let Some(c) = util::unescape(&mut chars) {
             string.push(c);
         }
 
-        ConstExpr::String(string)
+        string
     };
 
+
 pub ConstExpr: ConstExpr = {
-    Bool,
-    Int,
-    Real,
-    Char,
-    String
+    Bool => ConstExpr::Bool(<>),
+    Int => ConstExpr::Int(<>),
+    Real => ConstExpr::Real(<>),
+    Char => ConstExpr::Char(<>),
+    String => ConstExpr::String(<>),
 };
