@@ -7,6 +7,7 @@ pub enum ConstExpr {
     String(String)
 }
 
+#[derive(Debug, Clone)]
 pub enum Pattern {
     Any,
     Con,
@@ -19,6 +20,7 @@ pub enum Pattern {
     },
 }
 
+#[derive(Debug, Clone)]
 pub enum Expr {
     Var { var: String },
     New { expr: Box<Expr> },
