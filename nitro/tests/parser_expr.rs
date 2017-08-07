@@ -72,7 +72,7 @@ fn parse_strings() {
     let valid = vec![
         "\"\"", "\"hello\"",  "\"Good\\x42ye!\"", "\"\\\"Nevermore\\\"\"",
         "\"\\u03bb\\u03c7 \\u2192 \\u03c7\\u00b2\"",
-        "\"Can a string be really long\\n\\tAnd have a new line and shit?\"",
+        "\"Can a string be really long\\n\\tAnd escape a new line and stuff?\"",
     ];
 
     for s in valid.iter() {
@@ -83,16 +83,17 @@ fn parse_strings() {
                 Ok(ConstExpr::String(_)) => true,
                 _ => false
             },
-            format!("Cannot parse as char: \"{}\" -> {:?}", s, res)
+            format!("Cannot parse as string: \"{}\" -> {:?}", s, res)
         );
     }
 }
 
 
 #[test]
-fn parse_bad_strings() {
+fn parse_bad_string() {
     let invalid = vec![
-        "\"This should fail\nyo\"", "\"Escaping something I shouldn\\'t\""
+        "Unquoted?", "No open quote?\"", "\"No closing quote?",
+        "\"Control\ncharacters\"", "\"Escaping something I shouldn\\'t\""
     ];
 
     for s in invalid.iter() {
@@ -103,7 +104,7 @@ fn parse_bad_strings() {
                 Ok(ConstExpr::String(_)) => false,
                 _ => true
             },
-            format!("Cannot parse as char: \"{}\" -> {:?}", s, res)
+            format!("Erroneously parsed string: \"{}\" -> {:?}", s, res)
         );
     }
 }
