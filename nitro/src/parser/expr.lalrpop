@@ -1,8 +1,9 @@
 use std::str::FromStr;
 
 use parser::util;
-use parser::types::ConstExpr;
+use parser::types::Expr;
 use parser::types::Pattern;
+use parser::types::ConstExpr;
 
 grammar;
 
@@ -119,4 +120,102 @@ Pattern: Pattern = {
         pat: Box::new(pat),
         name: name.to_string()
     },
+};
+
+
+
+/// ===============
+/// # Expressions
+/// ===============
+
+
+FieldDecl: Vec<(String, Expr)> = {
+    <label: ID> "=" <expr: Expr> ";" => {
+        vec![(label.to_string(), expr)]
+    },
+
+    <label: ID> "=" <expr: Expr> ";" <rest: FieldDecl> => {
+        let mut fields = Vec::with_capacity(rest.len() + 1);
+        fields.push((label.to_string(), expr));
+        fields.extend(rest.iter().cloned());
+        fields
+    },
+};
+
+
+
+MatchRule: Vec<(Pattern, Expr)> = {
+    <pat: Pattern> "->" <expr: Expr> => {
+        vec![(pat, expr)]
+    },
+
+    <pat: Pattern> "->" <expr: Expr> "|" <rest: MatchRule> => {
+        let mut rules = Vec::with_capacity(rest.len() + 1);
+        rules.push((pat, expr));
+        rules.extend(rest.iter().cloned());
+        rules
+    }
+};
+
+
+Expr: Expr = {
+    ID => Expr::Var {
+        var: <>.to_string()
+    },
+
+    ConstExpr => Expr::Const {
+        expr: <>
+    },
+
+    "Con" <expr: Expr> => Expr::New {
+        expr: Box::new(expr)
+    },
+
+    "(" <expr: Expr> ")" => Expr::Parens {
+        expr: Box::new(expr)
+    },
+
+    "{" <fields: FieldDecl> "}" => Expr::NewRecord {
+        fields: fields
+    },
+
+    "match" <expr: Expr> "with" <rules: MatchRule> "end" => Expr::Match {
+        expr: Box::new(expr),
+        rules: rules
+    },
+
+    "fun" <pat: Pattern> "->" <expr: Expr> => Expr::Abstraction {
+        pat: pat,
+        expr: Box::new(expr)
+    },
+
+    <func: Expr> <arg: Expr> => Expr::Application {
+        func: Box::new(func),
+        arg: Box::new(arg)
+    },
+
+    <expr: Expr> "." <name: ID> => Expr::GetField {
+        expr: Box::new(expr),
+        name: name.to_string()
+    },
+
+    <expr: Expr> "." <name: ID> "<-" <value: Expr> => Expr::SetField {
+        expr: Box::new(expr),
+        name: name.to_string(),
+        value: Box::new(value)
+    },
+
+    "let" <pat: Pattern> "=" <value: Expr> "in" <expr: Expr> => Expr::Let {
+        pat: pat,
+        value: Box::new(value),
+        expr: Box::new(expr)
+    },
+
+    "let" "rec" <var: ID> "=" "fun" <pat: Pattern> "->" <value: Expr> "in"
+    <expr: Expr> => Expr::Recursion {
+        var: var.to_string(),
+        pat: pat,
+        value: Box::new(value),
+        expr: Box::new(expr)
+    }
 };
