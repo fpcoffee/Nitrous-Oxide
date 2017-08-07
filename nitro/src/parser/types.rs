@@ -23,14 +23,17 @@ pub enum Pattern {
 #[derive(Debug, Clone)]
 pub enum Expr {
     Var { var: String },
-    New { expr: Box<Expr> },
     Const { expr: ConstExpr },
+    New { expr: Box<Expr> },
     Parens { expr: Box<Expr> },
-    Match { rules: Vec<(Pattern, Expr)> },
     NewRecord { fields: Vec<(String, Expr)> },
+    Match {
+        expr: Box<Expr>,
+        rules: Vec<(Pattern, Expr)>
+    },
     Abstraction {
         pat: Pattern,
-        arg: Box<Expr>
+        expr: Box<Expr>
     },
     Application {
         func: Box<Expr>,
