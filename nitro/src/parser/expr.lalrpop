@@ -85,21 +85,14 @@ pub ConstExpr: ConstExpr = {
 /// ============
 
 
-FieldPattern: Vec<(String, Pattern)> = {
+FieldPattern: (String, Pattern) = {
     <label: ID> "=" <pat: Pattern> ";" => {
-        vec![(label.to_string(), pat)]
-    },
-
-    <label: ID> "=" <pat: Pattern> ";" <rest: FieldPattern> => {
-        let mut fields = Vec::with_capacity(rest.len() + 1);
-        fields.push((label.to_string(), pat));
-        fields.extend(rest.iter().cloned());
-        fields
+        (label.to_string(), pat)
     },
 };
 
 
-Pattern: Pattern = {
+pub Pattern: Pattern = {
     "_" => Pattern::Any,
 
     "Con" => Pattern::Con,
@@ -112,7 +105,7 @@ Pattern: Pattern = {
         pat: Box::new(pat)
     },
 
-    "{" <fields: FieldPattern> "}" => Pattern::Record {
+    "{" <fields: FieldPattern+> "}" => Pattern::Record {
         fields: fields
     },
 
@@ -123,42 +116,35 @@ Pattern: Pattern = {
 };
 
 
-
 /// ===============
 /// # Expressions
 /// ===============
 
 
-FieldDecl: Vec<(String, Expr)> = {
+FieldDecl: (String, Expr) = {
     <label: ID> "=" <expr: Expr> ";" => {
-        vec![(label.to_string(), expr)]
-    },
-
-    <label: ID> "=" <expr: Expr> ";" <rest: FieldDecl> => {
-        let mut fields = Vec::with_capacity(rest.len() + 1);
-        fields.push((label.to_string(), expr));
-        fields.extend(rest.iter().cloned());
-        fields
+        (label.to_string(), expr)
     },
 };
 
 
-
-MatchRule: Vec<(Pattern, Expr)> = {
+MatchRule: (Pattern, Expr) = {
     <pat: Pattern> "->" <expr: Expr> => {
-        vec![(pat, expr)]
-    },
-
-    <pat: Pattern> "->" <expr: Expr> "|" <rest: MatchRule> => {
-        let mut rules = Vec::with_capacity(rest.len() + 1);
-        rules.push((pat, expr));
-        rules.extend(rest.iter().cloned());
-        rules
+        (pat, expr)
     }
 };
 
 
-Expr: Expr = {
+MatchRules: Vec<(Pattern, Expr)> = {
+    <init: MatchRule> <v: ("|" <MatchRule>)*> => {
+        let mut v = v;
+        v.insert(0, init);
+        v
+    }
+};
+
+
+pub Expr: Expr = {
     ID => Expr::Var {
         var: <>.to_string()
     },
@@ -175,11 +161,11 @@ Expr: Expr = {
         expr: Box::new(expr)
     },
 
-    "{" <fields: FieldDecl> "}" => Expr::NewRecord {
+    "{" <fields: FieldDecl+> "}" => Expr::NewRecord {
         fields: fields
     },
 
-    "match" <expr: Expr> "with" <rules: MatchRule> "end" => Expr::Match {
+    "match" <expr: Expr> "with" <rules: MatchRules> "end" => Expr::Match {
         expr: Box::new(expr),
         rules: rules
     },
