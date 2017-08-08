@@ -90,7 +90,7 @@ fn parse_strings() {
 
 
 #[test]
-fn parse_bad_string() {
+fn parse_bad_strings() {
     let invalid = vec![
         "Unquoted?", "No open quote?\"", "\"No closing quote?",
         "\"Control\ncharacters\"", "\"Escaping something I shouldn\\'t\""
@@ -106,5 +106,27 @@ fn parse_bad_string() {
             },
             format!("Erroneously parsed string: \"{}\" -> {:?}", s, res)
         );
+    }
+}
+
+
+#[test]
+fn parse_patterns() {
+    let valid = vec![
+        "_", "varName", "true", "3.14", "Con", "Con taggedPattern",
+        "0 as namedLabel", "Con var as newVar",
+        "Con {x1 = 2; x2 = 4.;} as myStruct",
+        "{this = pattern;
+          has = {nested = _;
+                 field = 19;
+                 patterns = true as canBe;
+                };
+          yo = \"dawg\";
+         }",
+    ];
+
+    for pat in valid.iter() {
+        let res = expr::parse_Pattern(pat);
+        assert!(res.is_ok(), format!("Error: \"{}\"\n{:#?}\n", pat, res));
     }
 }
