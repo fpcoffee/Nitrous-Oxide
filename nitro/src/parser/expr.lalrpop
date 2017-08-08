@@ -94,6 +94,25 @@ pub ConstExpr: ConstExpr = {
 /// ============
 
 
+pub Pattern: Pattern = {
+    <pat: TaggedPattern> "as" <name: ID> => Pattern::Named {
+        pat: Box::new(pat),
+        name: name.to_string()
+    },
+
+    TaggedPattern
+};
+
+
+TaggedPattern: Pattern = {
+    "Con" <pat: BasePattern> => Pattern::Tagged {
+        pat: Box::new(pat)
+    },
+
+    BasePattern
+};
+
+
 FieldPattern: (String, Pattern) = {
     <label: ID> "=" <pat: Pattern> ";" => {
         (label.to_string(), pat)
@@ -101,12 +120,12 @@ FieldPattern: (String, Pattern) = {
 };
 
 
-pub Pattern: Pattern = {
+BasePattern: Pattern = {
     "_" => Pattern::Any,
 
     "Con" => Pattern::Con,
 
-    ConstExpr => Pattern::Const {
+    <ConstExpr> => Pattern::Const {
         constant: <>
     },
 
@@ -114,17 +133,8 @@ pub Pattern: Pattern = {
         id: id.to_string()
     },
 
-    "Con" <pat: Pattern> => Pattern::Tagged {
-        pat: Box::new(pat)
-    },
-
     "{" <fields: FieldPattern+> "}" => Pattern::Record {
         fields: fields
-    },
-
-    <pat: Pattern> "as" <name: ID> => Pattern::Named {
-        pat: Box::new(pat),
-        name: name.to_string()
     },
 };
 
