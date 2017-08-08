@@ -38,34 +38,32 @@ match {
 /// ========================
 
 
-pub Bool: bool =
-    BOOL => {
-        bool::from_str(<>).unwrap()
-    };
+pub Bool: bool = {
+    BOOL => bool::from_str(<>).unwrap()
+};
 
 
-pub Int: i64 =
-    INT => {
-        i64::from_str(<>).unwrap()
-    };
+pub Int: i64 = {
+    INT => i64::from_str(<>).unwrap()
+};
 
 
-pub Real: f64 =
-    REAL => {
-        f64::from_str(<>).unwrap()
-    };
+pub Real: f64 = {
+    REAL => f64::from_str(<>).unwrap()
+};
 
 
-pub Char: char =
+pub Char: char = {
     CHAR => {
         let chr = <>;
         let mut chars = chr[1..chr.len() - 1].chars();
 
         util::unescape(&mut chars).unwrap()
-    };
+    }
+};
 
 
-pub String: String =
+pub String: String = {
     STRING => {
         let s = <>;
         let len = s.len();
@@ -77,7 +75,8 @@ pub String: String =
         }
 
         string
-    };
+    }
+};
 
 
 pub ConstExpr: ConstExpr = {
