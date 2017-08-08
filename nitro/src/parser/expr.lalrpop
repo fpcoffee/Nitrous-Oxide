@@ -19,6 +19,15 @@ match {
     r#""([^\\"[[:cntrl:]]]|\\([\\"0abtnvfr]|u[0-9a-f]{4}|x[0-9a-f]{2}))*""#
         => STRING
 } else {
+    "as",
+    "end",
+    "fun",
+    "in",
+    "let",
+    "match",
+    "rec",
+    "with",
+} else {
     r"[a-z_][a-zA-Z0-9_]*" => ID,
     _
 }
