@@ -84,7 +84,7 @@ pub ConstExpr: ConstExpr = {
     Int => ConstExpr::Int(<>),
     Real => ConstExpr::Real(<>),
     Char => ConstExpr::Char(<>),
-    String => ConstExpr::String(<>),
+    String => ConstExpr::String(<>)
 };
 
 
@@ -115,7 +115,7 @@ TaggedPattern: Pattern = {
 FieldPattern: (String, Pattern) = {
     <label: ID> "=" <pat: Pattern> ";" => {
         (label.to_string(), pat)
-    },
+    }
 };
 
 
@@ -134,7 +134,7 @@ BasePattern: Pattern = {
 
     "{" <fields: FieldPattern+> "}" => Pattern::Record {
         fields: fields
-    },
+    }
 };
 
 
@@ -143,15 +143,8 @@ BasePattern: Pattern = {
 /// ===============
 
 
-FieldDecl: (String, Expr) = {
-    <label: ID> "=" <expr: Expr> ";" => {
-        (label.to_string(), expr)
-    },
-};
-
-
 MatchRule: (Pattern, Expr) = {
-    <pat: Pattern> "->" <expr: Expr> => {
+    <pat: Pattern> "=>" <expr: Expr> => {
         (pat, expr)
     }
 };
@@ -167,24 +160,10 @@ MatchRules: Vec<(Pattern, Expr)> = {
 
 
 pub Expr: Expr = {
-    ID => Expr::Var {
-        var: <>.to_string()
-    },
-
-    ConstExpr => Expr::Const {
-        constant: <>
-    },
-
-    "Con" <expr: Expr> => Expr::New {
+    "let" <pat: Pattern> "=" <value: Expr> "in" <expr: Expr> => Expr::Let {
+        pat: pat,
+        value: Box::new(value),
         expr: Box::new(expr)
-    },
-
-    "(" <expr: Expr> ")" => Expr::Parens {
-        expr: Box::new(expr)
-    },
-
-    "{" <fields: FieldDecl+> "}" => Expr::NewRecord {
-        fields: fields
     },
 
     "match" <expr: Expr> "with" <rules: MatchRules> "end" => Expr::Match {
@@ -197,33 +176,74 @@ pub Expr: Expr = {
         expr: Box::new(expr)
     },
 
-    <func: Expr> <arg: Expr> => Expr::Application {
+    "let" "rec" <var: ID> "=" "fun" <pat: Pattern> "->" <value: Expr>
+    "in" <expr: Expr> => Expr::Recursion {
+        var: var.to_string(),
+        pat: pat,
+        value: Box::new(value),
+        expr: Box::new(expr)
+    },
+
+    <func: GetExpr> <arg: Expr> => Expr::Application {
         func: Box::new(func),
         arg: Box::new(arg)
     },
 
-    <expr: Expr> "." <name: ID> => Expr::GetField {
-        expr: Box::new(expr),
-        name: name.to_string()
-    },
+    SetExpr
+};
 
-    <expr: Expr> "." <name: ID> "<-" <value: Expr> => Expr::SetField {
+
+SetExpr: Expr = {
+    <expr: GetExpr> "." <name: ID> "<-" <value: Expr> => Expr::SetField {
         expr: Box::new(expr),
         name: name.to_string(),
         value: Box::new(value)
     },
 
-    "let" <pat: Pattern> "=" <value: Expr> "in" <expr: Expr> => Expr::Let {
-        pat: pat,
-        value: Box::new(value),
+    GetExpr
+};
+
+
+GetExpr: Expr = {
+    <expr: GetExpr> "." <name: ID> => Expr::GetField {
+        expr: Box::new(expr),
+        name: name.to_string()
+    },
+
+    NewExpr
+};
+
+
+NewExpr: Expr = {
+    "Con" <expr: BaseExpr> => Expr::New {
         expr: Box::new(expr)
     },
 
-    "let" "rec" <var: ID> "=" "fun" <pat: Pattern> "->" <value: Expr> "in"
-    <expr: Expr> => Expr::Recursion {
-        var: var.to_string(),
-        pat: pat,
-        value: Box::new(value),
+    BaseExpr
+};
+
+
+FieldDecl: (String, Expr) = {
+    <label: ID> "=" <expr: Expr> ";" => {
+        (label.to_string(), expr)
+    }
+};
+
+
+BaseExpr: Expr = {
+    ID => Expr::Var {
+        var: <>.to_string()
+    },
+
+    ConstExpr => Expr::Const {
+        constant: <>
+    },
+
+    "(" <expr: Expr> ")" => Expr::Parens {
         expr: Box::new(expr)
+    },
+
+    "{" <fields: FieldDecl+> "}" => Expr::NewRecord {
+        fields: fields
     }
 };
