@@ -97,6 +97,10 @@ pub Pattern: Pattern = {
 
     "Con" => Pattern::Con,
 
+    ConstExpr => Pattern::Const {
+        constant: <>
+    },
+
     <id: ID> => Pattern::Ident {
         id: id.to_string()
     },
@@ -150,7 +154,7 @@ pub Expr: Expr = {
     },
 
     ConstExpr => Expr::Const {
-        expr: <>
+        constant: <>
     },
 
     "Con" <expr: Expr> => Expr::New {
