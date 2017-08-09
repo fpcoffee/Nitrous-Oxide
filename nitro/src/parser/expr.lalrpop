@@ -124,13 +124,9 @@ BasePattern: Pattern = {
 
     "Con" => Pattern::Con,
 
-    <ConstExpr> => Pattern::Const {
-        constant: <>
-    },
+    <ConstExpr> => Pattern::Const (<>),
 
-    <id: ID> => Pattern::Ident {
-        id: id.to_string()
-    },
+    <id: ID> => Pattern::Ident (id.to_string()),
 
     "{" <fields: FieldPattern+> "}" => Pattern::Record {
         fields: fields
@@ -231,13 +227,9 @@ FieldDecl: (String, Expr) = {
 
 
 BaseExpr: Expr = {
-    ID => Expr::Var {
-        var: <>.to_string()
-    },
+    ID => Expr::Var(<>.to_string()),
 
-    ConstExpr => Expr::Const {
-        constant: <>
-    },
+    ConstExpr => Expr::Const(<>),
 
     "(" <expr: Expr> ")" => Expr::Parens {
         expr: Box::new(expr)

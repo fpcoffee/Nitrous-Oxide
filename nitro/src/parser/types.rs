@@ -11,10 +11,14 @@ pub enum ConstExpr {
 pub enum Pattern {
     Any,
     Con,
-    Const { constant: ConstExpr },
-    Ident { id: String },
-    Tagged { pat: Box<Pattern> },
-    Record { fields: Vec<(String, Pattern)> },
+    Const(ConstExpr),
+    Ident(String),
+    Tagged {
+        pat: Box<Pattern>
+    },
+    Record {
+        fields: Vec<(String, Pattern)>
+    },
     Named {
         pat: Box<Pattern>,
         name: String
@@ -23,11 +27,17 @@ pub enum Pattern {
 
 #[derive(Debug, Clone)]
 pub enum Expr {
-    Var { var: String },
-    Const { constant: ConstExpr },
-    New { expr: Box<Expr> },
-    Parens { expr: Box<Expr> },
-    NewRecord { fields: Vec<(String, Expr)> },
+    Var(String),
+    Const(ConstExpr),
+    New {
+        expr: Box<Expr>
+    },
+    Parens {
+        expr: Box<Expr>
+    },
+    NewRecord {
+        fields: Vec<(String, Expr)>
+    },
     Match {
         expr: Box<Expr>,
         rules: Vec<(Pattern, Expr)>
