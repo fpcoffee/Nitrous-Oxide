@@ -13,11 +13,14 @@ fn parse_reals() {
     ];
 
     for r in valid.iter() {
-        let res = expr::parse_ConstExpr(r);
+        let res = expr::parse_PartialConstExpr(r);
 
         assert!(
             match res {
-                Ok(ConstExpr::Real(_)) => true,
+                Ok((ConstExpr::Real(_), end)) => {
+                    assert_eq!(end, r.len());
+                    true
+                }
                 _ => false
             },
             format!("Cannot parse as real: \"{}\" -> {:?}", r, res)
@@ -33,11 +36,11 @@ fn parse_bad_reals() {
     ];
 
     for r in invalid.iter() {
-        let res = expr::parse_ConstExpr(r);
+        let res = expr::parse_PartialConstExpr(r);
 
         assert!(
             match res {
-                Ok(ConstExpr::Real(_)) => false,
+                Ok((ConstExpr::Real(_), end)) => end < r.len(),
                 _ => true
             },
             format!("Erroneously parsed real: \"{}\"", r)
