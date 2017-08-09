@@ -8,3 +8,6 @@ authors = [
 
 [dependencies.nitro]
 path = "./nitro"
+
+[dependencies]
+rustyline = "1.0.0"
