@@ -1,0 +1,90 @@
+(**** OCaml value types from section 4.6.1.3 ****)
+
+type gc_colour =
+    Caml_white {0x000}
+  | Caml_grey  {0x100}
+  | Caml_blue  {0x200}
+  | Caml_black {0x300}
+
+type heap_object =
+    Closure {
+        247 with mask OxFF
+      ; _ with mask 0x300 of gc_colour
+      ; _ (>> 10) of int
+      ;}
+
+    (* In the Double tag we combine the tag field with the
+       length field , because the length is always the same. *)
+
+    | Double { 
+        0x8FD with mask 0x8FF
+      ; _ with mask 0x300 of gc_colour
+      ;} precedes (int, int)
+
+    | Tag { _with mask OxFF of int
+      ; _ with mask 0x300 of gc_colour
+      ; _ (>>10) of int.(1en)
+      (* TODO: semicolon here? *)
+      } precedes ocaml_value array.(len)
+  and immediate ocaml_value =
+      Ptr  { 0 with mask 1} of heap_object
+    | Long { 1 with mask 1} (>>. 1) of int
+
+(**** OCaml value comparison function from section 4.6.1.6 ****)
+
+(* Low-level representation of OCaml boolean values *)
+
+let ocaml_true  = Ptr { Tag {0;0;1} Array.empty }
+let ocaml_false = Ptr { Tag {0;0;0} Array.empty }
+
+let rec compare_val v1 v2 =
+  if v1 == v2
+  then ocaml_true
+  else match v1, v2 with
+      Ptr p1, Ptr p2 -> compare_heap_object p1 p2
+    | _ -> ocaml_false
+           (* Two equal Longs would be physically equal
+              and hence caught by the if above *)
+    end
+  (* end if *)
+and compare_heap_object o1 o2
+  match o1, o2 with
+      Closure _, _
+    | _, Closure _ -> caml_invalid_argument("equal: abstract value")
+    
+    | String {_; _; len1} s1,
+      String {_; _; len2} s2, ->
+        let res = compare_strings (len1, s1, len2, s2) in
+          Ptr { Tag { 0; 0; res} Array.empty }
+    
+    | Double (d1f, d1s), Double (d2f, d2s) ->
+        if (d1f == d2f) && (d1s == d2s)
+        then ocaml_true
+        else ocaml_false
+    
+    (* This case is required by the compiler so that in the final
+       case it knows that both arguments must be values created
+       with the Tag pattern. *)
+    | (String _ | Double _),
+      (String _ | Double _) -> ocaml_false
+    
+    | Tag (t1; _; len1} a1, Tag {t2; _; len2} a2 ->
+        if (t1 == t2) && (len1 == len2)
+        then
+          let rec match_args i =
+            if i < #len1
+            then
+              let res = compare_val a1.(len1).[i]
+                                    a2.(len2).[i]
+              in if res == ocaml_false
+                 then ocaml_false
+                 else match_args (i+1)
+            else ocaml_true
+          in match_args 0
+        else ocaml_false
+  end
+
+
+
+export ocaml_compare = compare_val
+
