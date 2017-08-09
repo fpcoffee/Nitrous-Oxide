@@ -16,7 +16,19 @@ fn parse_line(line: &str) {
 
         :h Show this help message
         :t Typecheck a Nitro expression
+        :! Run a command using /bin/sh
         ");
+    } else if line.starts_with(":!") { 
+        // Call sh -c 'COMMAND' and print output or error
+        let out = Command::new("sh").arg("-c").arg(&line[2..])
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .stdin(Stdio::inherit())
+            .output();
+        match out {
+            Err(e) => println!("error running command: {}", e),
+            _ => ()
+        }
     } else if line.starts_with(":t") { 
         println!("typechecking {}", &line[2..]);
     } else {
