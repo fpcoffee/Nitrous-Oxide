@@ -23,6 +23,7 @@ match {
     "(", ")", "->", ".", ";", "<-", "=", "=>", "_", "{", "|", "}"
 } else {
     r"[a-z_][a-zA-Z0-9_]*" => ID,
+    r"[A-Z][a-zA-Z0-9_]*" => CON,
     r"[!#$%&*+-./:<=>?@\\^|~]+" => OP,
     _
 }
@@ -56,7 +57,6 @@ pub Char: char = {
         util::unescape(&mut chars).unwrap()
     }
 };
-
 
 pub String: String = {
     STRING => {
@@ -99,8 +99,9 @@ pub Pattern: Pattern = {
 
 
 TaggedPattern: Pattern = {
-    "Con" <pat: BasePattern> => Pattern::Tagged {
-        pat: Box::new(pat)
+    <con: CON> <pat: BasePattern> => Pattern::Tagged {
+        pat: Box::new(pat),
+        con: con.to_string()
     },
 
     BasePattern
@@ -117,7 +118,7 @@ FieldPattern: (String, Pattern) = {
 BasePattern: Pattern = {
     "_" => Pattern::Any,
 
-    "Con" => Pattern::Con,
+    <con: CON> => Pattern::Con (con.to_string()),
 
     <ConstExpr> => Pattern::Const (<>),
 
@@ -211,8 +212,9 @@ GetExpr: Expr = {
 
 
 NewExpr: Expr = {
-    "Con" <expr: BaseExpr> => Expr::New {
-        expr: Box::new(expr)
+    <con: CON> <expr: BaseExpr> => Expr::New {
+        expr: Box::new(expr),
+        con: con.to_string()
     },
 
     BaseExpr
