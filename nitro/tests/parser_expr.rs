@@ -1,7 +1,7 @@
 extern crate nitro;
 
 use nitro::parser::expr;
-use nitro::parser::types::ConstExpr;
+use nitro::types::ConstExpr;
 
 #[test]
 fn parse_reals() {
@@ -30,7 +30,7 @@ fn parse_reals() {
 fn parse_bad_reals() {
     let invalid = vec![
         // Commented out tests can be incompletely parsed?
-        "", ".", ".e10", "25", "3 .14", // "3..14", "3.14.15"
+        "", ".", ".e10", "25", ".25", "3 .14" //, "3..14", "3.14.15"
     ];
 
     for r in invalid.iter() {
