@@ -7,17 +7,20 @@ use nitro::types::ConstExpr;
 fn parse_reals() {
     let valid = vec![
         "inf", "-inf", "NaN", "-NaN", "0.123", "-0.123", "3.14", "-3.14", "0.",
-        "-0.", "5.", "-5.", "0.123e2", "0.456E4", "0.789e-8", "0.101112E-16",
-        "3.14e10", "-3.14e10", "0.e10", "-0.e10", "5.e10", "-5.e10", "123e45",
-        "678E9", "10e-11", "12E-14", "0e12"
+        "-0.", "5.", "-5.", ".0", "-.0", ".5", "-.5", "0.123e2", "0.456E4",
+        "0.789e-8", "0.101112E-16", "3.14e10", "-3.14e10", "0.e10", "-0.e10",
+        "5.e10", "-5.e10", "123e45", "678E9", "10e-11", "12E-14", "0e12"
     ];
 
     for r in valid.iter() {
-        let res = expr::parse_ConstExpr(r);
+        let res = expr::parse_PartialConstExpr(r);
 
         assert!(
             match res {
-                Ok(ConstExpr::Real(_)) => true,
+                Ok((ConstExpr::Real(_), end)) => {
+                    assert_eq!(end, r.len());
+                    true
+                }
                 _ => false
             },
             format!("Cannot parse as real: \"{}\" -> {:?}", r, res)
@@ -29,15 +32,15 @@ fn parse_reals() {
 #[test]
 fn parse_bad_reals() {
     let invalid = vec![
-        "", ".", ".e10", "25", ".25", "3 .14", "3..14", "3.14.15"
+        "", ".", ".e10", "25", "2..", "3 .14", "3..14", "3.14.15"
     ];
 
     for r in invalid.iter() {
-        let res = expr::parse_ConstExpr(r);
+        let res = expr::parse_PartialConstExpr(r);
 
         assert!(
             match res {
-                Ok(ConstExpr::Real(_)) => false,
+                Ok((ConstExpr::Real(_), end)) => end < r.len(),
                 _ => true
             },
             format!("Erroneously parsed real: \"{}\" {:?}", r, res)
