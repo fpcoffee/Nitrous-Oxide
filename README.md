@@ -1,9 +1,13 @@
 # N&#x2082;O - Nitrous Oxide
 
+Nitro is a functional language that offers **a safe foreign function interface without marshalling**.
+This means Nitro can *call* or *be called by* other languages without encoding or decoding the foreign data.
+Nitro can operate on foreign data efficiently,
+while enforcing low-level constraints using its advanced type system.
 
 This is the main source code reposity for the Nitro programming language. It
 contains the current Nitro compiler N&#x2082;O, as well as tools and
-documentation.
+documentation for Nitro.
 
 ## Quick Start
 
