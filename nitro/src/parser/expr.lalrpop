@@ -1,9 +1,9 @@
 use std::str::FromStr;
 
 use parser::util;
-use parser::types::Expr;
-use parser::types::Pattern;
-use parser::types::ConstExpr;
+use types::Expr;
+use types::Pattern;
+use types::ConstExpr;
 
 grammar;
 
