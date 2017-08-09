@@ -165,7 +165,6 @@ MatchRules: Vec<(Pattern, Expr)> = {
     }
 };
 
-
 pub Expr: Expr = {
     "let" <pat: Pattern> "=" <value: Expr> "in" <expr: Expr> => Expr::Let {
         pat: pat,
@@ -255,4 +254,8 @@ BaseExpr: Expr = {
     "{" <fields: FieldDecl+> "}" => Expr::NewRecord {
         fields: fields
     }
+};
+
+pub TopLevelExpr: Expr = {
+    <e: Expr> ";" => e
 };
