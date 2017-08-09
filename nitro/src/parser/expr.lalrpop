@@ -180,20 +180,25 @@ pub Expr: Expr = {
         expr: Box::new(expr)
     },
 
-    <func: GetExpr> <arg: Expr> => Expr::Application {
-        func: Box::new(func),
-        arg: Box::new(arg)
-    },
-
     SetExpr
 };
 
 
 SetExpr: Expr = {
-    <expr: GetExpr> "." <name: ID> "<-" <value: Expr> => Expr::SetField {
+    <expr: GetExpr> "." <name: ID> "<-" <value: FuncExpr> => Expr::SetField {
         expr: Box::new(expr),
         name: name.to_string(),
         value: Box::new(value)
+    },
+
+    FuncExpr
+};
+
+
+FuncExpr: Expr = {
+    <func: FuncExpr> <arg: GetExpr> => Expr::Application {
+        func: Box::new(func),
+        arg: Box::new(arg)
     },
 
     GetExpr
