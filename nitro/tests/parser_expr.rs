@@ -29,8 +29,7 @@ fn parse_reals() {
 #[test]
 fn parse_bad_reals() {
     let invalid = vec![
-        // Commented out tests can be incompletely parsed?
-        "", ".", ".e10", "25", ".25", "3 .14" //, "3..14", "3.14.15"
+        "", ".", ".e10", "25", ".25", "3 .14", "3..14", "3.14.15"
     ];
 
     for r in invalid.iter() {
@@ -41,7 +40,7 @@ fn parse_bad_reals() {
                 Ok(ConstExpr::Real(_)) => false,
                 _ => true
             },
-            format!("Erroneously parsed real: \"{}\"", r)
+            format!("Erroneously parsed real: \"{}\" {:?}", r, res)
         );
     }
 }
